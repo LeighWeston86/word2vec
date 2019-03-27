@@ -2,19 +2,23 @@ import nltk
 import os
 import pandas as pd
 import numpy as np
+from operator import itemgetter
 
-def get_data(num_docs=10000, batch_size=128, data_path=None):
+def get_data(num_docs=10000, batch_size=128, data_path=None, get_minibatches=True):
     if not data_path:
         local_dir = os.path.dirname(__file__)
-        data_path = os.path.join(local_dir, 'data/hotel-reviews.csv')
+        data_path = os.path.join(local_dir, "data/hotel-reviews.csv")
     df = pd.read_csv(data_path)
-    reviews = list(df['Description'])[:num_docs]
+    reviews = list(df["Description"])[:num_docs]
     processed = pre_process(reviews)
     word2idx, idx2word, vocab = get_lookups(processed)
-    encoded = [[[word2idx[token] if token in vocab else word2idx['UNK'] for token in sent]
+    encoded = [[[word2idx[token] if token in vocab else word2idx["UNK"] for token in sent]
                for sent in doc] for doc in processed]
-    batches = get_batches(encoded, batch_size)
-    return batches, word2idx, idx2word
+    if not get_minibatches:
+        return encoded,  word2idx, idx2word
+    else:
+        batches = get_batches(encoded, batch_size)
+        return batches, word2idx, idx2word
 
 def pre_process(docs):
     processed_docs = []
@@ -28,8 +32,12 @@ def pre_process(docs):
 def get_lookups(docs, min_freq=3):
     words = [word for doc in docs for sent in doc for word in sent]
     fd = nltk.FreqDist(words)
-    vocab = {word for word in words if fd[word] >= min_freq}
-    vocab.add('UNK')
+    vocab = sorted([(word, freq) for word, freq in fd.items() if freq >= min_freq],
+                   key=itemgetter(1),
+                   reverse=True)
+    vocab = [word for word, _ in vocab]
+    # vocab = {word for word in words if fd[word] >= min_freq}
+    vocab.insert(0, 'UNK')
     word2idx = {word:idx for idx, word in enumerate(vocab)}
     idx2word = {idx:word for idx, word in enumerate(vocab)}
     return word2idx, idx2word, vocab
