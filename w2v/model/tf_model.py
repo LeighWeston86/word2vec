@@ -1,7 +1,6 @@
 import math
 import tensorflow as tf
 import numpy as np
-from w2v.data_utils import get_data
 
 class EmbeddingTrainer(object):
 
@@ -14,22 +13,20 @@ class EmbeddingTrainer(object):
                  window_size=5,
                  num_skips=3,
                  num_negative=64):
-
         """
         A class to train a word2vec model using the skip-gram model approach. This implementation uses either
         the softmax output layer with a node for each word in the vocabulary, or noise contranstive estimation (nce);
         it is recommended to use nce, as the softmax approach is extremely slow.
 
-        Arguments:
-            learning rate: float; learning rate for gradient descent
-            vocab_size: int; number of words in the vocabulary
-            word2idx: dict; mappings between words and their vocabulary index
-            use_nce: Boolean; uses nce if True (recomended), uses softmax if False
-            embedding_size: int; size of embeddings to train (number of nodes in hidden layer)
-            batch_size: int; number of samples in a minibatch
-            window_size: int; size of the skip-gram context window
-            num_skips: int; number of words to sample from the skip-gram context window
-            num_negative: int; number of negative context words to sample (only relevant for nce)
+        :param learning_rate: float; learning rate for gradient descent
+        :param vocab_size: int; number of words in the vocabulary
+        :param word2idx: dict; mappings between words and their vocabulary index
+        :param use_nce: Boolean; uses nce if True (recomended), uses softmax if False
+        :param embedding_size: int; size of embeddings to train
+        :param batch_size: int; number of samples in a minibatch
+        :param window_size: int; size of the skip-gram context window
+        :param num_skips: int; number of words to sample from the skip-gram context window
+        :param num_negative: int; number of negative context words to sample (only relevant for nce)
         """
 
         # Get the instance attributes
@@ -119,23 +116,6 @@ class EmbeddingTrainer(object):
             if verbose:
                 print("Loss after epoch {}: {}".format(epoch, epoch_loss/len(batches)))
 
-    def get_embedding(self, word):
+    def get_embedding_array(self):
         embeddings = self.sess.run(self.embeddings)
-        return embeddings[self.word2idx[word]]
-
-
-if __name__ == "__main__":
-    batches, word2idx, idx2word = get_data(num_docs=10000)
-    vocab_size = len(word2idx)
-    et = EmbeddingTrainer(0.5, vocab_size, word2idx, embedding_size=200)
-    et.train(batches, num_epochs=5)
-    print(et.get_embedding("the"))
-
-
-
-
-
-
-
-
-
+        return embeddings

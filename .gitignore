@@ -2,3 +2,5 @@ notebooks/
 .DS_Store
 .idea/
 w2v/__pycache__/
+w2v/data/tf_embeddings.npy
+w2v/data/vocab.txt

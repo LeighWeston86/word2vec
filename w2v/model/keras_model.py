@@ -1,19 +1,34 @@
 import numpy as np
-from w2v.data_utils import get_data
-from keras.layers import Input, Embedding, Reshape, Concatenate, Dense, dot
+from keras.layers import Input, Embedding, Reshape, Dense, dot
 from keras.models import Model
 from keras.preprocessing.sequence import make_sampling_table, skipgrams
+from keras.optimizers import RMSprop
 
 class EmbeddingTranier(object):
 
     def __init__(self, vocab_size, embedding_size, window_size=3):
+        """
+        A class to train the word2vec using the skip-gram approach in keras with negative sampling.
+
+        :param vocab_size: int; the number of words in the vocabulary
+        :param embedding_size: int; the size of embeddings to train
+        :param window_size: int; size of the skip-gram context window
+        """
         self.vocab_size = vocab_size
         self.embedding_size = embedding_size
         self.window_size = window_size
         self.model = None
+        self.embeddings = None
 
 
     def get_skips(self, docs):
+        """
+        Formats the data and generates negative samples.
+
+        :param docs: list; a list of documents; each document is a list of sentences;
+        a sentence is a list of tokens (strings)
+        :return: tuple; contains the center and context words, and the corresponding labels
+        """
         sampling_table = make_sampling_table(self.vocab_size)
         center_words, context_words, labels = [], [], []
         for doc in docs:
@@ -32,17 +47,22 @@ class EmbeddingTranier(object):
 
         return center_words, context_words, labels
 
-    def w2v_model(self):
+    def w2v_model(self, learning_rate):
+        """
+        Generates the neural architecture for the word2vec skip-gram model
+
+        :return: keras.models.Model(); the word2vec model
+        """
 
         # Add the input and embedding layers
         input_center = Input((1,))
         input_context = Input((1,))
-        embedding = Embedding(self.vocab_size, self.embedding_size, input_length=1, name="Embeddings")
+        self.embeddings = Embedding(self.vocab_size, self.embedding_size, input_length=1, name="Embeddings")
 
         # Get the center and context embeddings
-        center = embedding(input_center)
+        center = self.embeddings(input_center)
         center = Reshape((self.embedding_size, 1))(center)
-        context = embedding(input_context)
+        context = self.embeddings(input_context)
         context = Reshape((self.embedding_size, 1))(context)
 
         # Calculate the linear activations
@@ -55,15 +75,24 @@ class EmbeddingTranier(object):
 
         # Define the model
         model = Model(input=[input_center, input_context], output=output)
-        model.compile(loss="binary_crossentropy", optimizer="rmsprop")
+        optimizer = RMSprop(lr=learning_rate, rho=0.9, epsilon=None, decay=0.0)
+        model.compile(loss="binary_crossentropy", optimizer=optimizer)
 
         return model
 
-    def train(self, docs, num_batches=200000, verbose=True):
+    def train(self, docs, num_batches=2000, learning_rate=0.001, verbose=True):
+        """
+        Optimizes the model on the training data
+
+        :param docs: list; a sequence of documents; each document is a list of sentences;
+        a sentence is a list of tokens (strings)
+        :param num_batches: int; the number of (center, context) pairs to use in training
+        :param verbose: Boolean; if true, prints the loss druing training
+        """
 
         # Get the data and the model
         center_words, context_words, labels = self.get_skips(docs)
-        self.model = self.w2v_model()
+        self.model = self.w2v_model(learning_rate)
 
         # Randomly sample pair/label
         loss = []
@@ -76,16 +105,14 @@ class EmbeddingTranier(object):
             loss += [self.model.train_on_batch([center_word, context_word], label)]
 
             # Print the loss every 1000 batches
-            if batch % 1000 == 0 and verbose:
+            if len(loss) >= 1000 and verbose:
                 print(batch, sum(loss)/1000)
                 loss = []
 
-if __name__ == '__main__':
-    data, word2idx, idx2word = get_data(num_docs=100000, get_minibatches=False)
-    embedd = EmbeddingTranier(len(word2idx), 200)
-    embedd.train(data)
+    def get_embedding_array(self):
+        """
+        Gets the word embeddings
 
-
-
-
-
+        :return: array; the trained word embeddings
+        """
+        return self.embeddings.get_weights()[0]
