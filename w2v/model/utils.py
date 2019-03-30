@@ -16,7 +16,7 @@ def get_data(num_docs=10000, batch_size=128, data_path=None, get_minibatches=Tru
     """
     if not data_path:
         local_dir = os.path.dirname(__file__)
-        data_path = os.path.join(local_dir, "data/train_data.csv")
+        data_path = os.path.join(local_dir, "../data/train_data.csv")
     df = pd.read_csv(data_path)
     reviews = list(df["Description"])[:num_docs]
     processed = pre_process(reviews)
@@ -106,7 +106,7 @@ def get_analogies(vocab):
     :return: list; all of the analogies found in the vocabulary
     """
 
-    analogies_path = os.path.join(os.path.dirname(__file__), "data/analogies.txt")
+    analogies_path = os.path.join(os.path.dirname(__file__), "../data/analogies.txt")
     with open(analogies_path, "r") as f:
         analogies = [line.strip().split() for line in f if line.strip().split()[0] != ":"]
 
@@ -116,7 +116,7 @@ def get_analogies(vocab):
             in_vocab.append(analogy)
     return in_vocab
 
-def assess(embeddings, word2idx, idx2word, vocab, analogies):
+def assess(embeddings, word2idx, idx2word, analogies):
     """
     Assess the trained word vectors against the analogy test set.
 

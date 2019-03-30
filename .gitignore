@@ -4,3 +4,4 @@ notebooks/
 w2v/__pycache__/
 w2v/data/tf_embeddings.npy
 w2v/data/vocab.txt
+w2v/model/__pycache__/

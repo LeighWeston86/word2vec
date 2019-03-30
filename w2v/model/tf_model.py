@@ -2,6 +2,7 @@ import math
 import tensorflow as tf
 import numpy as np
 
+
 class EmbeddingTrainer(object):
 
     def __init__(self, learning_rate,
@@ -91,7 +92,7 @@ class EmbeddingTrainer(object):
                 labels=context_onehot))
         self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
 
-    def train(self, batches, num_epochs=10, verbose=True):
+    def train(self, batches, num_epochs=30, verbose=True):
         """
         Trains the model.
 
