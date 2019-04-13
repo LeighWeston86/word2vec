@@ -5,10 +5,13 @@ from keras.preprocessing.sequence import make_sampling_table, skipgrams
 from keras.optimizers import RMSprop
 
 class EmbeddingTranier(object):
+    """
+    A class to train the word2vec using the skip-gram approach in keras with negative sampling.
+    """
 
     def __init__(self, vocab_size, embedding_size, window_size=3):
         """
-        A class to train the word2vec using the skip-gram approach in keras with negative sampling.
+        Constructor method for embedding trainer.
 
         :param vocab_size: int; the number of words in the vocabulary
         :param embedding_size: int; the size of embeddings to train

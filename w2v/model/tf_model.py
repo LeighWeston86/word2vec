@@ -4,6 +4,11 @@ import numpy as np
 
 
 class EmbeddingTrainer(object):
+    """
+    A class to train a word2vec model using the skip-gram model approach. This implementation uses either
+    the softmax output layer with a node for each word in the vocabulary, or noise contranstive estimation (nce);
+    it is recommended to use nce, as the softmax approach is extremely slow.
+    """
 
     def __init__(self, learning_rate,
                  vocab_size,
@@ -15,9 +20,7 @@ class EmbeddingTrainer(object):
                  num_skips=3,
                  num_negative=64):
         """
-        A class to train a word2vec model using the skip-gram model approach. This implementation uses either
-        the softmax output layer with a node for each word in the vocabulary, or noise contranstive estimation (nce);
-        it is recommended to use nce, as the softmax approach is extremely slow.
+        Constructor method for embedding trainer.
 
         :param learning_rate: float; learning rate for gradient descent
         :param vocab_size: int; number of words in the vocabulary
